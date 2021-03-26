@@ -53,7 +53,12 @@ def train_knn(train_x_path: InputPath(), train_y_path: InputPath(), model_path: 
 def train_logistics(train_x_path: InputPath(), train_y_path: InputPath(), model_path: OutputPath()):
     import numpy
     import pickle
+    import random
     from sklearn.linear_model import LogisticRegression
+    p = random.random()
+    print(p)
+    if p > 0.5:
+        raise Exception()
     train_x = numpy.load(train_x_path)
     train_y = numpy.load(train_y_path)
     print(f"Training data size - X: {train_x.size}, y: {train_y.size}")
@@ -66,7 +71,12 @@ def train_logistics(train_x_path: InputPath(), train_y_path: InputPath(), model_
 def test_model(test_x_path: InputPath(), test_y_path: InputPath(), model_path: InputPath()):
     import numpy
     import pickle
+    import random
     from sklearn.metrics import classification_report
+    p = random.random()
+    print(p)
+    if p > 0.5:
+        raise Exception()
     test_x = numpy.load(test_x_path)
     test_y = numpy.load(test_y_path)
     print(f"Testing data size - X: {test_x.size}, y: {test_y.size}")
