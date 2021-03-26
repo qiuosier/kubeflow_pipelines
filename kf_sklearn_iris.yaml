@@ -1,0 +1,225 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: sklearn-iris-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0, pipelines.kubeflow.org/pipeline_compilation_time: '2021-03-22T12:23:56.199640',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Classifying Iris data
+      with KNN.", "name": "sklearn-iris"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.4.0}
+spec:
+  entrypoint: sklearn-iris
+  templates:
+  - name: load-and-split
+    container:
+      args: [--train-x, /tmp/outputs/train_x/data, --test-x, /tmp/outputs/test_x/data,
+        --train-y, /tmp/outputs/train_y/data, --test-y, /tmp/outputs/test_y/data]
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def _make_parent_dirs_and_return_path(file_path: str):\n    import os\n \
+        \   os.makedirs(os.path.dirname(file_path), exist_ok=True)\n    return file_path\n\
+        \ndef load_and_split(\n    train_x_path, \n    test_x_path,\n    train_y_path,\
+        \ \n    test_y_path\n):\n    import numpy\n    from sklearn import datasets\n\
+        \    from sklearn.model_selection import train_test_split\n\n    iris_x, iris_y\
+        \ = datasets.load_iris(return_X_y=True)\n    train_x, test_x, train_y , test_y\
+        \ = train_test_split(iris_x, iris_y, test_size=0.2)\n    print(f\"Training\
+        \ data size - X: {train_x.size}, y: {train_y.size}\")\n    print(f\"Testing\
+        \ data size - X: {test_x.size}, y: {test_y.size}\")\n\n    with open(train_x_path,\
+        \ 'wb') as f:\n        numpy.save(f, train_x)\n    with open(test_x_path,\
+        \ 'wb') as f:\n        numpy.save(f, test_x)\n    with open(train_y_path,\
+        \ 'wb') as f:\n        numpy.save(f, train_y)\n    with open(test_y_path,\
+        \ 'wb') as f:\n        numpy.save(f, test_y)\n\nimport argparse\n_parser =\
+        \ argparse.ArgumentParser(prog='Load and split', description='')\n_parser.add_argument(\"\
+        --train-x\", dest=\"train_x_path\", type=_make_parent_dirs_and_return_path,\
+        \ required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--test-x\"\
+        , dest=\"test_x_path\", type=_make_parent_dirs_and_return_path, required=True,\
+        \ default=argparse.SUPPRESS)\n_parser.add_argument(\"--train-y\", dest=\"\
+        train_y_path\", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)\n\
+        _parser.add_argument(\"--test-y\", dest=\"test_y_path\", type=_make_parent_dirs_and_return_path,\
+        \ required=True, default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\
+        \n_outputs = load_and_split(**_parsed_args)\n"
+      image: qiuosier/sklearn
+    outputs:
+      artifacts:
+      - {name: load-and-split-test_x, path: /tmp/outputs/test_x/data}
+      - {name: load-and-split-test_y, path: /tmp/outputs/test_y/data}
+      - {name: load-and-split-train_x, path: /tmp/outputs/train_x/data}
+      - {name: load-and-split-train_y, path: /tmp/outputs/train_y/data}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--train-x", {"outputPath": "train_x"}, "--test-x", {"outputPath":
+          "test_x"}, "--train-y", {"outputPath": "train_y"}, "--test-y", {"outputPath":
+          "test_y"}], "command": ["sh", "-ec", "program_path=$(mktemp)\nprintf \"%s\"
+          \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n", "def
+          _make_parent_dirs_and_return_path(file_path: str):\n    import os\n    os.makedirs(os.path.dirname(file_path),
+          exist_ok=True)\n    return file_path\n\ndef load_and_split(\n    train_x_path,
+          \n    test_x_path,\n    train_y_path, \n    test_y_path\n):\n    import
+          numpy\n    from sklearn import datasets\n    from sklearn.model_selection
+          import train_test_split\n\n    iris_x, iris_y = datasets.load_iris(return_X_y=True)\n    train_x,
+          test_x, train_y , test_y = train_test_split(iris_x, iris_y, test_size=0.2)\n    print(f\"Training
+          data size - X: {train_x.size}, y: {train_y.size}\")\n    print(f\"Testing
+          data size - X: {test_x.size}, y: {test_y.size}\")\n\n    with open(train_x_path,
+          ''wb'') as f:\n        numpy.save(f, train_x)\n    with open(test_x_path,
+          ''wb'') as f:\n        numpy.save(f, test_x)\n    with open(train_y_path,
+          ''wb'') as f:\n        numpy.save(f, train_y)\n    with open(test_y_path,
+          ''wb'') as f:\n        numpy.save(f, test_y)\n\nimport argparse\n_parser
+          = argparse.ArgumentParser(prog=''Load and split'', description='''')\n_parser.add_argument(\"--train-x\",
+          dest=\"train_x_path\", type=_make_parent_dirs_and_return_path, required=True,
+          default=argparse.SUPPRESS)\n_parser.add_argument(\"--test-x\", dest=\"test_x_path\",
+          type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--train-y\",
+          dest=\"train_y_path\", type=_make_parent_dirs_and_return_path, required=True,
+          default=argparse.SUPPRESS)\n_parser.add_argument(\"--test-y\", dest=\"test_y_path\",
+          type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = load_and_split(**_parsed_args)\n"],
+          "image": "qiuosier/sklearn"}}, "name": "Load and split", "outputs": [{"name":
+          "train_x", "type": "String"}, {"name": "test_x", "type": "String"}, {"name":
+          "train_y", "type": "String"}, {"name": "test_y", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{}'}
+  - name: sklearn-iris
+    dag:
+      tasks:
+      - {name: load-and-split, template: load-and-split}
+      - name: test-knn
+        template: test-knn
+        dependencies: [load-and-split, train-knn]
+        arguments:
+          artifacts:
+          - {name: load-and-split-test_x, from: '{{tasks.load-and-split.outputs.artifacts.load-and-split-test_x}}'}
+          - {name: load-and-split-test_y, from: '{{tasks.load-and-split.outputs.artifacts.load-and-split-test_y}}'}
+          - {name: train-knn-model, from: '{{tasks.train-knn.outputs.artifacts.train-knn-model}}'}
+      - name: train-knn
+        template: train-knn
+        dependencies: [load-and-split]
+        arguments:
+          artifacts:
+          - {name: load-and-split-train_x, from: '{{tasks.load-and-split.outputs.artifacts.load-and-split-train_x}}'}
+          - {name: load-and-split-train_y, from: '{{tasks.load-and-split.outputs.artifacts.load-and-split-train_y}}'}
+  - name: test-knn
+    container:
+      args: [--test-x, /tmp/inputs/test_x/data, --test-y, /tmp/inputs/test_y/data,
+        --model, /tmp/inputs/model/data]
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def test_knn(test_x_path, test_y_path, model_path):
+            import numpy
+            import pickle
+            from sklearn.metrics import classification_report
+            test_x = numpy.load(test_x_path)
+            test_y = numpy.load(test_y_path)
+            print(f"Testing data size - X: {test_x.size}, y: {test_y.size}")
+            with open(model_path, 'rb') as f:
+                knn = pickle.load(f)
+            pred_y = knn.predict(test_x)
+            print(classification_report(test_y, pred_y))
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Test knn', description='')
+        _parser.add_argument("--test-x", dest="test_x_path", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--test-y", dest="test_y_path", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = test_knn(**_parsed_args)
+      image: qiuosier/sklearn
+    inputs:
+      artifacts:
+      - {name: train-knn-model, path: /tmp/inputs/model/data}
+      - {name: load-and-split-test_x, path: /tmp/inputs/test_x/data}
+      - {name: load-and-split-test_y, path: /tmp/inputs/test_y/data}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--test-x", {"inputPath": "test_x"}, "--test-y", {"inputPath":
+          "test_y"}, "--model", {"inputPath": "model"}], "command": ["sh", "-ec",
+          "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
+          -u \"$program_path\" \"$@\"\n", "def test_knn(test_x_path, test_y_path,
+          model_path):\n    import numpy\n    import pickle\n    from sklearn.metrics
+          import classification_report\n    test_x = numpy.load(test_x_path)\n    test_y
+          = numpy.load(test_y_path)\n    print(f\"Testing data size - X: {test_x.size},
+          y: {test_y.size}\")\n    with open(model_path, ''rb'') as f:\n        knn
+          = pickle.load(f)\n    pred_y = knn.predict(test_x)\n    print(classification_report(test_y,
+          pred_y))\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Test
+          knn'', description='''')\n_parser.add_argument(\"--test-x\", dest=\"test_x_path\",
+          type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--test-y\",
+          dest=\"test_y_path\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--model\",
+          dest=\"model_path\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = test_knn(**_parsed_args)\n"],
+          "image": "qiuosier/sklearn"}}, "inputs": [{"name": "test_x"}, {"name": "test_y"},
+          {"name": "model"}], "name": "Test knn"}', pipelines.kubeflow.org/component_ref: '{}'}
+  - name: train-knn
+    container:
+      args: [--train-x, /tmp/inputs/train_x/data, --train-y, /tmp/inputs/train_y/data,
+        --model, /tmp/outputs/model/data]
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def _make_parent_dirs_and_return_path(file_path: str):
+            import os
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            return file_path
+
+        def train_knn(train_x_path, train_y_path, model_path):
+            import numpy
+            import pickle
+            from sklearn.neighbors import KNeighborsClassifier
+            train_x = numpy.load(train_x_path)
+            train_y = numpy.load(train_y_path)
+            print(f"Training data size - X: {train_x.size}, y: {train_y.size}")
+            knn = KNeighborsClassifier()
+            knn.fit(train_x, train_y)
+            with open(model_path, 'wb') as f:
+                pickle.dump(knn, f)
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Train knn', description='')
+        _parser.add_argument("--train-x", dest="train_x_path", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--train-y", dest="train_y_path", type=str, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--model", dest="model_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = train_knn(**_parsed_args)
+      image: qiuosier/sklearn
+    inputs:
+      artifacts:
+      - {name: load-and-split-train_x, path: /tmp/inputs/train_x/data}
+      - {name: load-and-split-train_y, path: /tmp/inputs/train_y/data}
+    outputs:
+      artifacts:
+      - {name: train-knn-model, path: /tmp/outputs/model/data}
+    metadata:
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--train-x", {"inputPath": "train_x"}, "--train-y", {"inputPath":
+          "train_y"}, "--model", {"outputPath": "model"}], "command": ["sh", "-ec",
+          "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3
+          -u \"$program_path\" \"$@\"\n", "def _make_parent_dirs_and_return_path(file_path:
+          str):\n    import os\n    os.makedirs(os.path.dirname(file_path), exist_ok=True)\n    return
+          file_path\n\ndef train_knn(train_x_path, train_y_path, model_path):\n    import
+          numpy\n    import pickle\n    from sklearn.neighbors import KNeighborsClassifier\n    train_x
+          = numpy.load(train_x_path)\n    train_y = numpy.load(train_y_path)\n    print(f\"Training
+          data size - X: {train_x.size}, y: {train_y.size}\")\n    knn = KNeighborsClassifier()\n    knn.fit(train_x,
+          train_y)\n    with open(model_path, ''wb'') as f:\n        pickle.dump(knn,
+          f)\n\nimport argparse\n_parser = argparse.ArgumentParser(prog=''Train knn'',
+          description='''')\n_parser.add_argument(\"--train-x\", dest=\"train_x_path\",
+          type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--train-y\",
+          dest=\"train_y_path\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--model\",
+          dest=\"model_path\", type=_make_parent_dirs_and_return_path, required=True,
+          default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs
+          = train_knn(**_parsed_args)\n"], "image": "qiuosier/sklearn"}}, "inputs":
+          [{"name": "train_x"}, {"name": "train_y"}], "name": "Train knn", "outputs":
+          [{"name": "model"}]}', pipelines.kubeflow.org/component_ref: '{}'}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner
